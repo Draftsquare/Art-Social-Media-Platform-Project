@@ -4,48 +4,67 @@
     // 2. Perform a database query
     // 3. Use the returned data from the database
     // 4. Release the return data
-   //  5. Close the database connection
+    // 5. Close the database connection
   
+    $databaseConnection = mysqli_connect( "localhost", "root", "", "ArtWave" );
 
-
-   $databaseConnection = mysqli_connect( "localhost", "root", "", "ArtWave" );
-
-   if ( mysqli_connect_errno() ) {
+    if ( mysqli_connect_errno() ) {
         exit( "Database connection failed" );
-   } else {
-        // echo( "Success!" );
-   }
-
-   // echo ( "Connection to the database is successful" );
-  
-   // Temporary user id
-   $userId = 1;
-
-   if( isset( $_GET['userDeleteId'])) {
-        $userDeleteId = mysqli_real_escape_string( $databaseConnection, $_GET['userDeleteId']);
-
-        $sql = "DELETE FROM posts ";
-        $sql .= "WHERE id='" . $userDeleteId . "'";
-
-       $postDeletionSuccessful = mysqli_query( $databaseConnection, $sql );
-       if( $postDeletionSuccessful ) {
-        // echo("Post Sueccessfully inserted");
-        header("Location: index.php");
-        exit();
-    } else {
-     echo( mysqli_error ($databaseConnection) );
-
-     if( $databaseConnection ) {
-         mysqli_close( $databaseConnection );
-      }
-
-     exit();
     }
 
-   }
-   
+    // Temporary user id
+    $userId = 1;
 
-   if( $_SERVER[ 'REQUEST_METHOD'] == 'POST' && isset( $_POST['postButtonClicked'] ) ) {
+    /* ABOUT TO DELETE */
+    if( isset( $_GET['postDeleteId'])) {
+        $postDeleteId = mysqli_real_escape_string( $databaseConnection, $_GET['postDeleteId']);
+
+        $sql = "DELETE FROM posts ";
+        $sql .= "WHERE id='" . $postDeleteId . "'";
+
+        $postDeletionSuccessful = mysqli_query( $databaseConnection, $sql );
+        if( $postDeletionSuccessful ) {
+            header("Location: index.php");
+            exit();
+        } else {
+            echo( mysqli_error ($databaseConnection) );
+
+            if( $databaseConnection ) {
+                mysqli_close( $databaseConnection );
+            }
+
+            exit();
+        }
+
+    }
+
+    /* ABOUT TO EDIT */
+    if( $_SERVER[ 'REQUEST_METHOD'] == 'POST' && isset( $_POST['editPostClicked'] ) ) {
+        $postToEdit = mysqli_real_escape_string ($databaseConnection, $_GET['postToEdit'] );
+        $updatedPost = mysqli_real_escape_string ($databaseConnection, $_POST['updatedPost'] );
+
+        $sql = "UPDATE posts SET ";
+        $sql .= "postContent='" . mysqli_real_escape_string( $databaseConnection, stripslashes($updatedPost)) . "' ";
+        $sql .= "WHERE id='" . $postToEdit . "'";
+
+        $postUpdateSuccessful = mysqli_query($databaseConnection, $sql );
+
+        if( $postUpdateSuccessful ) {
+            header("Location: index.php");
+            exit();
+        } else {
+            echo( mysqli_error ($databaseConnection) );
+
+            if( $databaseConnection ) {
+                mysqli_close( $databaseConnection );
+            }
+
+            exit();
+        }
+    }
+
+    /* ABOUT TO POST */
+    if( $_SERVER[ 'REQUEST_METHOD'] == 'POST' && isset( $_POST['postButtonClicked'] ) ) {
         $postContent = mysqli_real_escape_string ( $databaseConnection, $_POST['postContent'] );
 
         $sql = "INSERT INTO posts (";
@@ -54,79 +73,87 @@
         $sql .= "'" . $postContent . "', ";
         $sql .= "'". $userId . "'";
         $sql .= ")";
-
-       /*() echo($sql);
-        exit(); */
+        
+        // var_dump($sql);
+        // exit();
+        
 
         $postInsertionSuccessful = mysqli_query( $databaseConnection, $sql );
 
-       if( $postInsertionSuccessful ) {
-           // echo("Post Sueccessfully inserted");
-       } else {
-        echo( mysqli_error ($databaseConnection) );
+        if( $postInsertionSuccessful ) {
+            // Post inserted successfully
+        } else {
+            echo( mysqli_error ($databaseConnection) );
 
-        if( $databaseConnection ) {
-            mysqli_close( $databaseConnection );
-         }
-
-        exit();
-       }
-   }
-   
+            if( $databaseConnection ) {
+                mysqli_close( $databaseConnection );
+            }
+            
+        }
+    }
 ?>
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>ArtWave</title>
-        <link href="css/ArtWave.css" rel="stylesheet">
-    </head>
-    <body>
-        <h1>Welcome to ArtWave!</h1>
-        <form action="index.php" method="post">
-            <textarea name="postContent"></textarea>
-            <input type="submit" value="Post" name="postButtonClicked">
-        </form>
-        <?php
-            $sql = "SELECT * FROM posts";
+<head>
+    <title>ArtWave</title>
+    <link href="css/ArtWave.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Welcome to ArtWave!</h1>
+    <form action="index.php" method="post">
+        <textarea name="postContent"></textarea>
+        <input type="submit" value="Post" name="postButtonClicked">
+    </form>
+    <?php
+    $sql = "SELECT * FROM posts";
 
-            $allPosts = mysqli_query($databaseConnection, $sql);
-            // var_dump($allPosts);
-            // exit();
+    $allPosts = mysqli_query($databaseConnection, $sql);
 
-        while ( $currentPost= mysqli_fetch_assoc( $allPosts ) ) {
-            
-?> 
-            <article>
-                <?php echo ($currentPost['date']); ?> :
-                <?php echo ($currentPost['postContent']); ?> by
-                <?php 
-                    $sql = "SELECT * FROM users ";
-                    $sql .= "WHERE id ='" . $currentPost['userid'] . "'";
+    while ( $currentPost = mysqli_fetch_assoc( $allPosts ) ) {
 
-                    $userOfPost = mysqli_query( $databaseConnection, $sql);
-                    $userOfPost = mysqli_fetch_assoc( $userOfPost);
-                ?>
-                <?php echo( $userOfPost['nickname']);
-                echo("<br>"); 
-                ?> 
-                <?php if($userOfPost['id'] == $userId ){
-?>
-                        <a href="<?php echo("index.php?userDeleteId=" . urlencode ($currentPost['id'] ) ); ?>">Delete</a>
-<?php 
-                }
-                ?>
-                <?php
-        }
-            
-            ?> 
-            </article>
-    </body>
+    ?> 
+    <article>
+        <?php echo ($currentPost['date']); ?> :
+        <?php echo ($currentPost['postContent']); ?> by
+        <?php 
+            $sql = "SELECT * FROM users ";
+            $sql .= "WHERE id ='" . $currentPost['userid'] . "'";
+
+            $userOfPost = mysqli_query( $databaseConnection, $sql);
+            $userOfPost = mysqli_fetch_assoc( $userOfPost);
+        ?>
+        <?php echo( $userOfPost['nickname']);
+        echo("<br>"); 
+        ?> 
+        <?php if($userOfPost['id'] == $userId ){ ?>
+            <a href="<?php echo("index.php?postDeleteId=" . urlencode ($currentPost['id'] ) ); ?>">Delete</a>
+            <a href="<?php echo("index.php?postEditId=" . urlencode ($currentPost['id'] ) ); ?>">Edit</a>
+        <?php } ?>
+    </article>
+    <?php
+    /* ABOUT TO EDIT */
+    if( isset( $_GET ['postEditId'] ) && $currentPost['id'] == $_GET['postEditId'] && $userOfPost['id'] == $userId ) {
+        $postEditId = mysqli_real_escape_string( $databaseConnection, $_GET['postEditId'] );
+        $sql = "SELECT * FROM posts ";
+        $sql .= "WHERE id='" .$postEditId . "'";
+
+        $postToEdit = mysqli_query($databaseConnection, $sql);
+        $postToEdit = mysqli_fetch_assoc( $postToEdit);
+        
+    ?>
+    <form action="<?php echo("index.php?postToEdit=" . urlencode( $postToEdit['id'] ) ); ?>" method="POST"> 
+        <textarea name="updatedPost"><?php echo ($postToEdit['postContent']); ?></textarea>
+        <input type ="submit" name="editPostClicked" value="Edit post">
+    </form>
+    <?php } ?>
+    <?php } ?>
+</body>
 </html>
 
 
 <?php
     if( $databaseConnection ) {
-    mysqli_close( $databaseConnection );
- }
+        mysqli_close( $databaseConnection );
+    }
 ?>
