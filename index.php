@@ -7,13 +7,27 @@
     // 5. Close the database connection
   
     $databaseConnection = mysqli_connect( "localhost", "root", "", "ArtWave" );
+    /* This is responsible for storing all errors */
+    $errors = [];
+    session_start();
 
     if ( mysqli_connect_errno() ) {
         exit( "Database connection failed" );
     }
 
-    // Temporary user id
-    $userId = 1;
+    /* Require that anyone who accesses this page is logged in */
+    if(!isset( $_SESSION['userId'] ) ){
+        header("Location: login.php");
+        exit();
+    } else {
+    ?>
+        Welcome <?php echo( $_SESSION['username'] ); ?> 
+        <a href="logout.php">Logout</a>
+    <?php
+        $userId = $_SESSION['userId']; 
+    }
+
+    
 
     /* ABOUT TO DELETE */
     if( isset( $_GET['postDeleteId'])) {
@@ -67,32 +81,40 @@
     if( $_SERVER[ 'REQUEST_METHOD'] == 'POST' && isset( $_POST['postButtonClicked'] ) ) {
         $postContent = mysqli_real_escape_string ( $databaseConnection, $_POST['postContent'] );
 
-        $sql = "INSERT INTO posts (";
-        $sql .= "postContent, userid)";
-        $sql .= " VALUES ( ";
-        $sql .= "'" . $postContent . "', ";
-        $sql .= "'". $userId . "'";
-        $sql .= ")";
-        
-        // var_dump($sql);
-        // exit();
-        
-
-        $postInsertionSuccessful = mysqli_query( $databaseConnection, $sql );
-
-        if( $postInsertionSuccessful ) {
-            // Post inserted successfully
-        } else {
-            echo( mysqli_error ($databaseConnection) );
-
-            if( $databaseConnection ) {
-                mysqli_close( $databaseConnection );
-            }
-            
+        /* If the post content is not set or after trimming it, it's equal to an empty string */
+        if( !isset($postContent) || trim($postContent) === "" ) {
+            $errors[] = "Please type in something";
         }
-    }
-?>
 
+        if(empty($errors ) ) {
+            $sql = "INSERT INTO posts (";
+            $sql .= "postContent, userid)";
+            $sql .= " VALUES ( ";
+            $sql .= "'" . $postContent . "', ";
+            $sql .= "'". $userId . "'";
+            $sql .= ")";
+            
+           
+            
+    
+            $postInsertionSuccessful = mysqli_query( $databaseConnection, $sql );
+    
+            if( $postInsertionSuccessful ) {
+                // Post inserted successfully
+            } else {
+                echo( mysqli_error ($databaseConnection) );
+    
+                if( $databaseConnection ) {
+                    mysqli_close( $databaseConnection );
+                }
+                exit();
+            }
+        } 
+        }
+
+?>
+     <!-- var_dump($sql);
+        exit(); -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -101,6 +123,13 @@
 </head>
 <body>
     <h1>Welcome to ArtWave!</h1>
+    <span class="error">
+<?php
+        foreach($errors as $currentError ) {
+            echo("$currentError");
+        }
+?>
+    </span>
     <form action="index.php" method="post">
         <textarea name="postContent"></textarea>
         <input type="submit" value="Post" name="postButtonClicked">
@@ -115,7 +144,7 @@
     ?> 
     <article>
         <?php echo ($currentPost['date']); ?> :
-        <?php echo ($currentPost['postContent']); ?> by
+        <?php echo ( htmlspecialchars($currentPost['postContent']) ); ?> by
         <?php 
             $sql = "SELECT * FROM users ";
             $sql .= "WHERE id ='" . $currentPost['userid'] . "'";
