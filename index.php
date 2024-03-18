@@ -5,7 +5,12 @@
     // 3. Use the returned data from the database
     // 4. Release the return data
     // 5. Close the database connection
-  
+    define("SITE_CC", "I don't own the copyright");
+
+    function formatFooterText($year, $copyright){
+        return $year . " " . $copyright;
+    }
+
     $databaseConnection = mysqli_connect( "localhost", "root", "", "ArtWave" );
     /* This is responsible for storing all errors */
     $errors = [];
@@ -21,7 +26,7 @@
         exit();
     } else {
     ?>
-        Welcome <?php echo( $_SESSION['username'] ); ?> 
+        Welcome <?php echo( $_SESSION['nickname'] ); ?> 
         <a href="logout.php">Logout</a>
     <?php
         $userId = $_SESSION['userId']; 
@@ -140,6 +145,8 @@
     $allPosts = mysqli_query($databaseConnection, $sql);
 
     while ( $currentPost = mysqli_fetch_assoc( $allPosts ) ) {
+        // var_dump($currentPost);
+        // exit();
 
     ?> 
     <article>
@@ -177,6 +184,9 @@
     </form>
     <?php } ?>
     <?php } ?>
+    <footer>
+    <?php echo( formatFooterText("2024" , SITE_CC)); ?>
+    </footer>
 </body>
 </html>
 
@@ -185,4 +195,5 @@
     if( $databaseConnection ) {
         mysqli_close( $databaseConnection );
     }
+
 ?>

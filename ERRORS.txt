@@ -1,9 +1,0 @@
-issues:
-
-1. User signup feature creates 2 entries into the database instead of 1
-
-2. user login form doesn't appear to tell you if something is wrong with the inputted credentials, nor does it seem to know if the login was successful
-
-3. Continuing with 2, if the credentials are right it doesn't redirect you to index. The error makes the user stuck on login indefinitely 
-
-4. Deleting users and posts from database don't make them go away
