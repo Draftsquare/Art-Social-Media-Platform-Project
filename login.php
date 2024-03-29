@@ -8,14 +8,15 @@
         exit( "Database connection failed" );
     }
 
-    if( $_SERVER[ 'REQUEST_METHOD'] == 'POST' && isset( $_POST['signInClicked'] ) ) {
+    if( $_SERVER[ 'REQUEST_METHOD'] == 'POST' && isset( $_POST['signInClicked'] ) ) { 
         $nickname = mysqli_real_escape_string( $databaseConnection, $_POST['nickname'] );
         $password = mysqli_real_escape_string( $databaseConnection, $_POST['password'] );
 
         /* Find the user by their username */
-        $sql = "SELECT * FROM users";
+        $sql = "SELECT * FROM users ";
         $sql .= "WHERE nickname='" . $nickname . "'";
-
+        // echo($sql);
+        // exit();
         $user = mysqli_query( $databaseConnection, $sql );
         $user = mysqli_fetch_assoc( $user );
 
@@ -38,9 +39,11 @@
         }
 
     }
-?>
+   
+   
+    ?>
     <span class="error">
-<?php
+        <?php
         foreach($errors as $currentError ) {
             echo("$currentError");
         }
@@ -49,5 +52,5 @@
     <form action="login.php" method="post">
         <input type="text" name="nickname" placeholder="Nickname">
         <input type="password" name="password" placeholder="Password">
-        <input type="submit" value="Sign in" name="SignInClicked">
+        <input type="submit" value="Sign in" name="signInClicked">
     </form>

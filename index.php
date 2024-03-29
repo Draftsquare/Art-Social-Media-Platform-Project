@@ -11,6 +11,31 @@
         return $year . " " . $copyright;
     }
 
+    $footerLinks = array(
+    "About Us" => array(
+        "Mission Statement",
+        "Our Team",
+        "History"
+    ),
+    "Services" => array(
+        "Web Design",
+        "Graphic Design",
+        "Digital Marketing"
+    ),
+    "Resources" => array(
+        "Blog",
+        "Whitepapers",
+        "Case Studies"
+    ),
+    "Contact Us" => array(
+        "Location",
+        "Email",
+        "Phone"
+    )
+);
+
+ 
+
     $databaseConnection = mysqli_connect( "localhost", "root", "", "ArtWave" );
     /* This is responsible for storing all errors */
     $errors = [];
@@ -128,6 +153,20 @@
 </head>
 <body>
     <h1>Welcome to ArtWave!</h1>
+<?php
+ $sql = "SELECT users.nickname, 
+ (SELECT COUNT(*) 
+  FROM posts 
+  WHERE posts.userid = users.id) AS post_count
+ FROM users
+ WHERE users.id = {$_SESSION['userId']}";
+
+
+ $userAndPostCount = mysqli_query($databaseConnection, $sql);
+ while ( $currentUserAndPostCount = mysqli_fetch_assoc( $userAndPostCount ) ) {
+    echo( $currentUserAndPostCount['nickname'] . " " . $currentUserAndPostCount['post_count'] . " posts.");
+ }
+?>
     <span class="error">
 <?php
         foreach($errors as $currentError ) {
@@ -149,6 +188,7 @@
         // exit();
 
     ?> 
+    
     <article>
         <?php echo ($currentPost['date']); ?> :
         <?php echo ( htmlspecialchars($currentPost['postContent']) ); ?> by
@@ -185,6 +225,18 @@
     <?php } ?>
     <?php } ?>
     <footer>
+    <table>
+        <?php foreach ($footerLinks as $category => $links): ?>
+            <tr>
+                <th><?php echo $category; ?></th>
+            </tr>
+            <?php foreach ($links as $link): ?>
+                <tr>
+                    <td><?php echo $link; ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+    </table>
     <?php echo( formatFooterText("2024" , SITE_CC)); ?>
     </footer>
 </body>

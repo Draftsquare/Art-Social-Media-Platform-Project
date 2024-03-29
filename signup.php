@@ -23,7 +23,6 @@
 
        
 
-        $userInsertedSuccessfully = mysqli_query( $databaseConnection, $sql);
 
         $userInsertedSuccessfully = mysqli_query( $databaseConnection, $sql );
     
